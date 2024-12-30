@@ -3,6 +3,7 @@ package org.example.client;
 import org.example.datastructure.wdi.WDI;
 import org.example.helper.Config;
 import org.example.helper.DAO;
+import org.example.server.Server;
 
 import java.io.*;
 import java.net.Socket;
@@ -80,15 +81,20 @@ public class Client implements Runnable {
      * @param command Befehl
      */
     private void executeCommand(String command) {
-        try (Socket socket = new Socket("localhost", Config.SERIAL_PORT);
-             PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
-            out.println(command);
-            String response = in.readLine();
-            System.err.println("Server response: " + response);
-        } catch (IOException e) {
-            e.printStackTrace();
+        if(Server.isOn()) {
+            try (Socket socket = new Socket("localhost", Config.SERIAL_PORT);
+                 PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+                 BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
+                out.println(command);
+                String response = in.readLine();
+                System.err.println("Server response: " + response);
+            } catch (IOException e) {
+                System.err.println("Error while executing command: " + command);
+                System.err.println("Error message: " + e.getMessage());
+            }
+            return;
         }
+        System.err.println("Server is not running." +command+" cannot be executed");
     }
 
     /**

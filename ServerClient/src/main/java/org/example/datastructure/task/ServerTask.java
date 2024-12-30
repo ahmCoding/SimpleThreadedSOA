@@ -21,6 +21,7 @@ public class ServerTask implements Runnable{
 
     @Override
     public void run() {
+
         try (PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
              BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));) {
             String line = in.readLine();
@@ -42,7 +43,7 @@ public class ServerTask implements Runnable{
                 }
                 case "z" -> {
                     System.err.println("Stop");
-                    yield new ShutdownCommand(commandData, serverSocket);
+                    yield new ShutdownCommand(commandData);
                 }
                 default -> {
                     System.err.println("Error");

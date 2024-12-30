@@ -14,10 +14,10 @@ import java.util.concurrent.TimeUnit;
  * Klasse zur Implementierung des Multithreaded Servers
  */
 public class Server {
-    public static volatile boolean stopServer;
+    // Server kann von verschiedenen Threads gestoppt werden, deswegen volatile
+    private static volatile boolean stopServer;
     private static ThreadPoolExecutor executor;
     private  static ServerSocket serverSocket;
-
     public static ThreadPoolExecutor getExecutor() {
         return executor;
     }
@@ -32,12 +32,13 @@ public class Server {
         }
         System.out.println("Initialization completed.");
         do {
-                try {
+            try {
                     Socket clientSocket = serverSocket.accept();
                     Thread delegatedTask = new Thread(new ServerTask(serverSocket,clientSocket));
                     executor.execute(delegatedTask);
                 }catch (IOException e) {
-                    throw new RuntimeException(e);
+                    System.err.println("Error while accepting a client connection.");
+                    System.err.println(e.getMessage());
                 }
             } while (!stopServer);
             System.out.println("Server prepared for shutdown.");
@@ -47,9 +48,35 @@ public class Server {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-
         System.out.println("Server shutdown completed.");
 
+    }
+
+    public static String shutdown() {
+        if(!stopServer){
+        stopServer = true;
+        // keine weiteren Anfragen annehmen
+        executor.shutdown();
+        try {
+            // ServerSocket schließen damit serverSocket.accept() beendet wird
+            serverSocket.close();
+
+        } catch (Exception e) {
+            System.err.println("Error while closing the server socket.");
+            e.printStackTrace();
+            return "Error while closing the server socket.";
+        }
+        return Thread.currentThread().getName() + " : Server Socket closed!";
+    }
+        return Thread.currentThread().getName() + " : Server already closed!";
+    }
+    /**
+     * Überprüft, ob der Server noch aktiv ist.
+     *
+     * @return true, wenn der Server noch aktiv ist, sonst false
+     */
+    public static boolean isOn() {
+        return !stopServer;
     }
 
 }

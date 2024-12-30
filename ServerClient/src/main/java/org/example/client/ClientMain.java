@@ -8,7 +8,7 @@ import org.example.helper.DAO;
 public class ClientMain {
     public static void main(String[] args) {
         Thread[] threads;
-        int numOfIt = 5;
+        int numOfIt = 1;
         DAO dao = DAO.getDao();
         for (int i = 1; i <= numOfIt; i++) {
             threads = new Thread[i];
@@ -24,7 +24,7 @@ public class ClientMain {
                 }
             }
         }
-        // server shutdown
+
         Thread tShutDown = new Thread(new Client(dao, true));
         tShutDown.start();
     }
