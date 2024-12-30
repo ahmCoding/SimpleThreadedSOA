@@ -26,7 +26,7 @@ public class Server {
         stopServer = false;
         executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
         try {
-            serverSocket = new ServerSocket(Config.SERIAL_PORT, 50, InetAddress.getByName("127.0.0.1"));
+            serverSocket = new ServerSocket(Config.PARALLEL_PORT, 50, InetAddress.getByName("127.0.0.1"));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

@@ -82,7 +82,7 @@ public class Client implements Runnable {
      */
     private void executeCommand(String command) {
         if(Server.isOn()) {
-            try (Socket socket = new Socket("localhost", Config.SERIAL_PORT);
+            try (Socket socket = new Socket("localhost", Config.PARALLEL_PORT);
                  PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
                  BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
                 out.println(command);
