@@ -8,7 +8,7 @@ import org.example.helper.DAO;
 public class ClientMain {
     public static void main(String[] args) {
         Thread[] threads;
-        int numOfIt = 1;
+        int numOfIt = 3;
         DAO dao = DAO.getDao();
         for (int i = 1; i <= numOfIt; i++) {
             threads = new Thread[i];

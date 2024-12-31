@@ -1,5 +1,7 @@
 package org.example.cache;
 
+import org.example.commands.Command;
+import org.example.commands.FakeCommand;
 import org.junit.jupiter.api.*;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -19,7 +21,7 @@ class CacheSystemTest {
     @Test
     void testPutAndGet() {
         // Given
-        String command = "testCommand";
+        Command command = new FakeCommand("testCommand");
         String result = "testResult";
 
         // When
@@ -33,7 +35,8 @@ class CacheSystemTest {
     @Test
     void testGetNonExistentItem() {
         // When
-        String result = cacheSystem.get("nichtExistierenderBefehl");
+        Command command = new FakeCommand("nichtExistierenderBefehl");
+        String result = cacheSystem.get(command);
 
         // Then
         assertNull(result, "Nicht existierende Items sollten null zurückgeben");
@@ -42,13 +45,14 @@ class CacheSystemTest {
     @Test
     void testCleanRemovesOldItems() throws InterruptedException {
         // Given
-        cacheSystem.put("command1", "result1");
+        Command command = new FakeCommand("command1");
+        cacheSystem.put(command, "result1");
 
         // When
         // Warte länger als das Clean-Up-Interval
         Thread.sleep(Config.CLEAN_UP_INTERVAL + 100);
         // Then
-        assertNull(cacheSystem.get("command1"), "Alte Items sollten nach dem Cleanup nicht mehr im Cache sein");
+        assertNull(cacheSystem.get(command), "Alte Items sollten nach dem Cleanup nicht mehr im Cache sein");
     }
 
     @Test
@@ -58,7 +62,8 @@ class CacheSystemTest {
 
         // When
         for (int i = 0; i <= maxSize + 1; i++) {
-            cacheSystem.put("command" + i, "result" + i);
+            Command command = new FakeCommand("command" + i);
+            cacheSystem.put(command, "result" + i);
         }
 
         // Then

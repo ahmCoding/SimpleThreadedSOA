@@ -1,22 +1,23 @@
 package org.example.cache;
 
+import org.example.commands.Command;
 /**
  * Representiert ein Element im Cache.
  */
 public class CacheItem {
-    private String command;
+    private Command command;
     private String result;
     private long createdAt;
     private long lastAccessedAt;
 
-    public CacheItem(String command, String result) {
+    public CacheItem(Command command, String result) {
         this.command = command;
         this.result = result;
         this.createdAt = System.currentTimeMillis();
         this.lastAccessedAt = System.currentTimeMillis();
     }
 
-    public String getCommand() {
+    public Command getCommand() {
         return command;
     }
 
@@ -32,7 +33,7 @@ public class CacheItem {
         return lastAccessedAt;
     }
 
-    public void setCommand(String command) {
+    public void setCommand(Command command) {
         this.command = command;
     }
 

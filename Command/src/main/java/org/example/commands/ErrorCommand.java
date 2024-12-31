@@ -1,4 +1,4 @@
-package org.example.datastructure.command;
+package org.example.commands;
 
 /**
  * Klasse zur Implementierung des Befehls "Error"

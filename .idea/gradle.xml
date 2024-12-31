@@ -20,9 +20,9 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/Cache" />
+            <option value="$PROJECT_DIR$/Command" />
             <option value="$PROJECT_DIR$/ServerClient" />
             <option value="$PROJECT_DIR$/buildSrc" />
-            <option value="$PROJECT_DIR$/list" />
           </set>
         </option>
       </GradleProjectSettings>

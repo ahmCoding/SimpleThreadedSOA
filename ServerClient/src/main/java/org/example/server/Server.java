@@ -1,5 +1,6 @@
 package org.example.server;
 
+import org.example.cache.CacheSystem;
 import org.example.datastructure.task.ServerTask;
 import org.example.helper.Config;
 import java.io.IOException;
@@ -18,13 +19,23 @@ public class Server {
     private static volatile boolean stopServer;
     private static ThreadPoolExecutor executor;
     private  static ServerSocket serverSocket;
+    private static CacheSystem serverCache;
     public static ThreadPoolExecutor getExecutor() {
         return executor;
+    }
+    /**
+     * Gibt den Server-Cache zurück.
+     *
+     * @return Der Server-Cache
+     */
+    public static CacheSystem getServerCache() {
+        return serverCache;
     }
 
     public static void main(String[] arg) {
         stopServer = false;
         executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+        serverCache = new CacheSystem();
         try {
             serverSocket = new ServerSocket(Config.PARALLEL_PORT, 50, InetAddress.getByName("127.0.0.1"));
         } catch (IOException e) {
@@ -34,7 +45,7 @@ public class Server {
         do {
             try {
                     Socket clientSocket = serverSocket.accept();
-                    Thread delegatedTask = new Thread(new ServerTask(serverSocket,clientSocket));
+                    Thread delegatedTask = new Thread(new ServerTask(clientSocket));
                     executor.execute(delegatedTask);
                 }catch (IOException e) {
                     System.err.println("Error while accepting a client connection.");
@@ -52,18 +63,24 @@ public class Server {
 
     }
 
+    /**
+     * Beendet den Server.
+     *
+     * @return Eine Meldung, ob der Server erfolgreich beendet wurde
+     */
     public static String shutdown() {
         if(!stopServer){
         stopServer = true;
         // keine weiteren Anfragen annehmen
         executor.shutdown();
+        serverCache.shutdown();
         try {
             // ServerSocket schließen damit serverSocket.accept() beendet wird
             serverSocket.close();
 
         } catch (Exception e) {
             System.err.println("Error while closing the server socket.");
-            e.printStackTrace();
+            System.err.println(e.getMessage());
             return "Error while closing the server socket.";
         }
         return Thread.currentThread().getName() + " : Server Socket closed!";

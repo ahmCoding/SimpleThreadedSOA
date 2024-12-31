@@ -1,12 +1,14 @@
 package org.example.cache;
 
+import org.example.commands.Command;
+
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Representiert die Cache-Verwaltung.
  */
 public class CacheSystem {
-    private ConcurrentHashMap<String,CacheItem> cache ;
+    private ConcurrentHashMap<Command,CacheItem> cache ;
     private final Thread cleanCacheTask;
 
     public CacheSystem() {
@@ -19,7 +21,7 @@ public class CacheSystem {
      * @param command Der Befehl
      * @param result Das Ergebnis zum Befehl
      */
-    public void put(String command, String result) {
+    public void put(Command command, String result) {
         if (cache.size() <= Config.CACHE_SIZE) {
             cache.put(command, new CacheItem(command, result));
             return;
@@ -27,11 +29,11 @@ public class CacheSystem {
         System.err.println("Cache is full. Command can't be cached.");
     }
     /**
-     * Holt ein Element aus dem Cache.
+     * Gibt das Ergebnis zum Befehl zurück.
      * @param command Der Befehl
      * @return Das Ergebnis zum Befehl
      */
-    public String get(String command) {
+    public String get(Command command) {
         CacheItem item = cache.get(command);
         if (item != null) {
             item.setLastAccessedAt(System.currentTimeMillis());

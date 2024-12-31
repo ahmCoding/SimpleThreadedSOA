@@ -1,6 +1,5 @@
-package org.example.datastructure.command;
+package org.example.commands;
 
-import org.example.server.Server;
 
 import java.io.StringWriter;
 

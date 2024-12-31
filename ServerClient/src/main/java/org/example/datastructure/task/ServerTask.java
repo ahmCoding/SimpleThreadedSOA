@@ -1,22 +1,20 @@
 package org.example.datastructure.task;
 
-import org.example.datastructure.command.*;
+import org.example.commands.*;
 import org.example.server.Server;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.net.ServerSocket;
 import java.net.Socket;
 
 public class ServerTask implements Runnable{
     private final Socket clientSocket;
-    private final ServerSocket serverSocket;
 
-    public ServerTask(ServerSocket serverSocket,Socket clientSocket) {
+    public ServerTask(Socket clientSocket) {
         this.clientSocket = clientSocket;
-        this.serverSocket = serverSocket;
+
     }
 
     @Override
@@ -28,6 +26,7 @@ public class ServerTask implements Runnable{
             Command command;
             String[] commandData = line.split(";");
             System.err.println("Command: " + commandData[0]);
+            // Command nicht vorhanden in Cache
             command = switch (commandData[0]) {
                 case "q" -> {
                     System.err.println("Query");
@@ -50,18 +49,30 @@ public class ServerTask implements Runnable{
                     yield new ErrorCommand(commandData);
                 }
             };
-            String response = command.execute();
-            System.err.println(response);
-            out.println(response);
-        } catch (
-                IOException e) {
-            e.printStackTrace();
-        }
-        // ClientSocket schließen
-        try {
-            clientSocket.close();
+            // ServerCache wird zuerst gesucht
+            String result =Server.getServerCache().get(command);
+            if (result != null) {
+                out.println(Server.getServerCache().get(command));
+                System.err.println("**** Cache hit for command: " + line+" ****");
+                return;
+            }
+
+            result = command.execute();
+            Server.getServerCache().put(line, result);
+            System.err.println(result);
+            out.println(result);
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.println("Error while processing the client request.");
+            System.err.println(e.getMessage());
+        }
+        // ClientSocket schließen, finally-block wegen 'return' in 'Cache-hit' Fall
+        finally {
+            try {
+                clientSocket.close();
+            } catch (IOException e) {
+                System.err.println("Error while closing the client socket.");
+                System.err.println(e.getMessage());
+            }
         }
     }
 }
