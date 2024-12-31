@@ -1,6 +1,6 @@
-package org.example.commands;
+package org.example.command;
 
-import org.example.helper.DAO;
+import org.example.dataLoader.DAO;
 
 /**
  * Klasse zur Implementierung des Befehls "Query"
@@ -8,6 +8,7 @@ import org.example.helper.DAO;
 public class QueryCommand extends Command {
     public QueryCommand(String[] argument) {
         super(argument);
+        cacheable = true;
     }
 
     @Override

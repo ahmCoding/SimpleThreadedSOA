@@ -1,6 +1,6 @@
 package org.example.cache;
 
-import org.example.commands.Command;
+import org.example.command.Command;
 
 import java.util.concurrent.ConcurrentHashMap;
 

@@ -1,7 +1,7 @@
-package org.example.datastructure.task;
+package org.example.server.task;
 
-import org.example.commands.*;
-import org.example.server.Server;
+import org.example.command.*;
+import org.example.server.ThreadedServer;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -9,11 +9,16 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 
-public class ServerTask implements Runnable{
+/**
+ * Klasse zur Ausführung von Commands, die aus Clients-Anfrage kommen.
+ */
+public class ServerExecuteCommandTask implements Runnable {
     private final Socket clientSocket;
+    private final ThreadedServer server;
 
-    public ServerTask(Socket clientSocket) {
+    public ServerExecuteCommandTask(Socket clientSocket, ThreadedServer server) {
         this.clientSocket = clientSocket;
+        this.server = server;
 
     }
 
@@ -38,11 +43,11 @@ public class ServerTask implements Runnable{
                 }
                 case "s" -> {
                     System.err.println("Status");
-                    yield new ServerStatusCommand(commandData);
+                    yield new ServerStatusCommand(commandData, server);
                 }
                 case "z" -> {
                     System.err.println("Stop");
-                    yield new ShutdownCommand(commandData);
+                    yield new ShutdownCommand(commandData, server);
                 }
                 default -> {
                     System.err.println("Error");
@@ -50,22 +55,23 @@ public class ServerTask implements Runnable{
                 }
             };
             // ServerCache wird zuerst gesucht
-            String result =Server.getServerCache().get(command);
+            String result = server.getServerCache().get(command);
             if (result != null) {
-                out.println(Server.getServerCache().get(command));
-                System.err.println("**** Cache hit for command: " + line+" ****");
+                out.println(server.getServerCache().get(command));
+                System.err.println("**** Cache hit for command: " + line + " ****");
                 return;
             }
 
             result = command.execute();
-            Server.getServerCache().put(line, result);
+            // wenn der Command zum Zwischenspeichern geeignet ist (Serverstatus oder Shutdown sind nicht!)
+            if (command.isCacheable()) server.getServerCache().put(command, result);
             System.err.println(result);
             out.println(result);
         } catch (IOException e) {
             System.err.println("Error while processing the client request.");
             System.err.println(e.getMessage());
         }
-        // ClientSocket schließen, finally-block wegen 'return' in 'Cache-hit' Fall
+        // ClientSocket schließen, finally-block wegen 'return' in 'Cache-hit' Fall notwendig
         finally {
             try {
                 clientSocket.close();

@@ -1,4 +1,4 @@
-package org.example.datastructure.wdi;
+package org.example.wdi;
 
 /**
  * Klasse zur Repräsentation von einem Daten-Punkt/ Zeile in dem Datensatz "World Development Indicators (WDI) 1960-2023",

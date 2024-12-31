@@ -1,6 +1,6 @@
 package org.example.cache;
 
-import org.example.commands.Command;
+import org.example.command.Command;
 /**
  * Representiert ein Element im Cache.
  */

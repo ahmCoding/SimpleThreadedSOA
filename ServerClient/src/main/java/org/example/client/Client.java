@@ -1,12 +1,16 @@
 package org.example.client;
 
-import org.example.datastructure.wdi.WDI;
+import org.example.dataLoader.DAO;
 import org.example.helper.Config;
-import org.example.helper.DAO;
-import org.example.server.Server;
+import org.example.server.ServerRemote;
+import org.example.wdi.WDI;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.Socket;
+import java.rmi.RemoteException;
 import java.util.List;
 import java.util.Random;
 
@@ -19,21 +23,21 @@ public class Client implements Runnable {
 
     private static final int QUERY_ITERATIONS = 10;
     private static final int QUERIES_PER_ITERATION = 9;
-
+    private ServerRemote server;
     private final DAO dao;
     private final Random random;
     private boolean shutdownServer;
 
-    public Client(DAO daoToset, boolean shutdownServer) {
+    public Client(ServerRemote server, DAO daoToset, boolean shutdownServer) {
         dao = daoToset;
         random = new Random();
         this.shutdownServer = shutdownServer;
+        this.server = server;
     }
 
-    public Client(DAO daoToset) {
-        dao = daoToset;
-        random = new Random();
-        this.shutdownServer = false;
+    public Client(ServerRemote server, DAO daoToset) {
+
+        this(server, daoToset, false);
     }
 
     @Override
@@ -54,6 +58,7 @@ public class Client implements Runnable {
     private String buildServerStateCommand() {
         return "s";
     }
+
     private void executeServerState() {
         String command = buildServerStateCommand();
         executeCommand(command);
@@ -81,20 +86,24 @@ public class Client implements Runnable {
      * @param command Befehl
      */
     private void executeCommand(String command) {
-        if(Server.isOn()) {
-            try (Socket socket = new Socket("localhost", Config.PARALLEL_PORT);
-                 PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-                 BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
-                out.println(command);
-                String response = in.readLine();
-                System.err.println("Server response: " + response);
-            } catch (IOException e) {
-                System.err.println("Error while executing command: " + command);
-                System.err.println("Error message: " + e.getMessage());
+        try {
+            if (server.isRunning()) {
+                try (Socket socket = new Socket("localhost", Config.PARALLEL_PORT);
+                     PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+                     BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
+                    out.println(command);
+                    String response = in.readLine();
+                    System.err.println("Server response: " + response);
+                } catch (IOException e) {
+                    System.err.println("Error while executing command: " + command);
+                    System.err.println("Error message: " + e.getMessage());
+                }
+                return;
             }
-            return;
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
         }
-        System.err.println("Server is not running." +command+" cannot be executed");
+        System.err.println("Server is not running." + command + " cannot be executed");
     }
 
     /**

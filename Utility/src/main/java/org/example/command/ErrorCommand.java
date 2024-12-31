@@ -1,4 +1,4 @@
-package org.example.commands;
+package org.example.command;
 
 /**
  * Klasse zur Implementierung des Befehls "Error"

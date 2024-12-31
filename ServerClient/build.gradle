@@ -9,7 +9,7 @@ plugins {
 dependencies {
     implementation 'org.apache.commons:commons-text'
     implementation project(':Cache')
-    implementation project(':Command')
+    implementation project(':Utility')
 }
 
 application {

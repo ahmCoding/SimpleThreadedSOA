@@ -1,6 +1,6 @@
-package org.example.helper;
+package org.example.dataLoader;
 
-import org.example.datastructure.wdi.WDI;
+import org.example.wdi.WDI;
 
 import java.io.BufferedReader;
 import java.io.InputStream;

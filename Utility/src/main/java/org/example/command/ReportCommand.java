@@ -1,6 +1,6 @@
-package org.example.commands;
+package org.example.command;
 
-import org.example.helper.DAO;
+import org.example.dataLoader.DAO;
 
 /**
  * Klasse zur Implementierung des Befehls "Report"
@@ -8,6 +8,7 @@ import org.example.helper.DAO;
 public class ReportCommand extends Command {
     public ReportCommand(String[] argument) {
         super(argument);
+        cacheable = true;
     }
 
     @Override

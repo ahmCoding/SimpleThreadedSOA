@@ -1,9 +1,9 @@
-package org.example.helper;
+package org.example.dataLoader;
 
-import org.example.datastructure.wdi.WDI;
+import org.example.wdi.WDI;
 
-import java.util.List;
 import java.io.StringWriter;
+import java.util.List;
 
 /**
  * Klasse zur Verwaltung von Daten. Diese Klasse ist als Singleton implementiert
