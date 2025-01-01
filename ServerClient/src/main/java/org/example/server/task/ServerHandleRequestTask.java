@@ -16,7 +16,7 @@ public class ServerHandleRequestTask implements Runnable {
 
     @Override
     public void run() {
-        while (!Thread.interrupted()) {
+        while (!Thread.currentThread().isInterrupted()) {
             server.handleRequests();
         }
         System.err.println("Server is stopped and can't response to any client");

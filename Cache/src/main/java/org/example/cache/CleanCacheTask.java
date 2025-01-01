@@ -1,8 +1,6 @@
 package org.example.cache;
 
-import java.time.Duration;
-
-public class CleanCacheTask implements Runnable{
+public class CleanCacheTask implements Runnable {
     private CacheSystem cache;
 
     public CleanCacheTask(CacheSystem cache) {
@@ -16,9 +14,11 @@ public class CleanCacheTask implements Runnable{
             try {
                 Thread.sleep(Config.CLEAN_UP_DELAY);
             } catch (InterruptedException e) {
-            System.err.println("CleanCacheTask was interrupted.");
+                System.err.println("CleanCacheTask is interrupted.");
+                Thread.currentThread().interrupt();
+                break;
             }
         }
-        System.err.println("CleanCacheTask was shut down.");
+        System.err.println("CleanCacheTask shut down.");
     }
 }

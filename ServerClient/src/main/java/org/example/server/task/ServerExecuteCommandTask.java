@@ -24,9 +24,12 @@ public class ServerExecuteCommandTask implements Runnable {
 
     @Override
     public void run() {
+        PrintWriter out = null;
+        BufferedReader in = null;
 
-        try (PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
-             BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));) {
+        try {
+            out = new PrintWriter(clientSocket.getOutputStream(), true);
+            in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
             String line = in.readLine();
             Command command;
             String[] commandData = line.split(";");
@@ -54,7 +57,7 @@ public class ServerExecuteCommandTask implements Runnable {
                     yield new ErrorCommand(commandData);
                 }
             };
-            // ServerCache wird zuerst gesucht
+            // ServerCache wird zuerst gesucht-> Cache-Hit
             String result = server.getServerCache().get(command);
             if (result != null) {
                 out.println(server.getServerCache().get(command));
@@ -75,8 +78,10 @@ public class ServerExecuteCommandTask implements Runnable {
         finally {
             try {
                 clientSocket.close();
+                if (out != null) out.close();
+                if (in != null) in.close();
             } catch (IOException e) {
-                System.err.println("Error while closing the client socket.");
+                System.err.println("Error while closing the client socket/streams.");
                 System.err.println(e.getMessage());
             }
         }
