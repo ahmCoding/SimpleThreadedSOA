@@ -67,20 +67,20 @@ class CacheSystemTest {
         }
 
         // Then
-        assertNull(cacheSystem.get("command" + (maxSize + 1)),
+        assertNull(cacheSystem.get(new FakeCommand("command" + (maxSize + 1))),
                 "Element über dem Größenlimit sollte nicht gecacht werden");
     }
 
     @Test
     void testItemUpdateLastAccessed() throws InterruptedException {
         // Given
-        String command = "testCommand";
+        FakeCommand command = new FakeCommand("testCommand");
         String result = "testResult";
         cacheSystem.put(command, result);
 
         // When
         Thread.sleep(Config.CLEAN_UP_INTERVAL / 2);
-        String firstAccess = cacheSystem.get(command);
+        cacheSystem.get(command); // First access
         Thread.sleep(Config.CLEAN_UP_INTERVAL / 2);
         String secondAccess = cacheSystem.get(command);
         Thread.sleep(10_000);

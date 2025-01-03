@@ -148,6 +148,17 @@ public class Logger {
     }
 
     /**
+     * Setzt die Logger-Instanz zurück. Nur für Tests.
+     */
+    public static void reset() {
+        if (instance != null) {
+            instance.shutdown();
+            instance = null;
+        }
+        isRunning = false;
+    }
+
+    /**
      * Loggt eine Nachricht mit dem LogLevel INFO.
      *
      * @param message      Die Nachricht, die geloggt werden soll.
@@ -187,6 +198,30 @@ public class Logger {
         log(message, LogLevel.ERROR, loggingClass);
     }
 
+    /**
+     * Gibt an, ob der Logger gerade läuft.
+     *
+     * @return true, wenn der Logger läuft, false sonst.
+     */
+    public boolean isRunning() {
+        return isRunning;
+    }
+
+    /**
+     * Schreibt die Log-Nachrichten in die Datei.
+     */
+    public void flush() {
+        writeLogs();
+    }
+
+
+    /**
+     * LogLevel für die Log-Nachrichten.
+     */
+    public enum LogLevel {
+        INFO, DEBUG, WARNING, ERROR
+    }
+
     private static class LogMessage {
         private final String message;
         private final LogLevel level;
@@ -197,13 +232,7 @@ public class Logger {
             this.level = level;
             this.loggingClass = className;
         }
-
-    }
-
-    /**
-     * LogLevel für die Log-Nachrichten.
-     */
-    public enum LogLevel {
-        INFO, DEBUG, WARNING, ERROR
     }
 }
+        
+

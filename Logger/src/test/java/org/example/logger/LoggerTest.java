@@ -25,26 +25,51 @@ public class LoggerTest {
 
     @BeforeEach
     void setUp() throws IOException {
+        // Logger-Instanz zurücksetzen
+        Logger.reset();
+        
         // Logger-Instanz für den Test erstellen
         logger = Logger.getLogger(TEST_CLASS_NAME);
         logFilePath = Paths.get(Config.LOG_FILE_PATH + TEST_CLASS_NAME + "-" +
                 Config.FILE_NAME_FORMATTER.format(java.time.LocalDateTime.now()) + ".log");
 
-        Files.createDirectories(logFilePath.getParent());
-        if (Files.exists(logFilePath))
-            Files.write(logFilePath, new byte[0], StandardOpenOption.TRUNCATE_EXISTING);
-        else
-            Files.createFile(logFilePath);
+        try {
+            Files.createDirectories(logFilePath.getParent());
+            if (Files.exists(logFilePath)) {
+                Files.write(logFilePath, new byte[0], StandardOpenOption.TRUNCATE_EXISTING);
+            } else {
+                Files.createFile(logFilePath);
+            }
+        } catch (IOException e) {
+            fail("Failed to setup test log file: " + e.getMessage());
+        }
     }
 
     @AfterEach
-    void resetEnv() {
-        // Logger herunterfahren und Datei löschen
+    void tearDown() {
+        // Logger herunterfahren
         logger.shutdown();
-        try {
-            Files.deleteIfExists(logFilePath);
-        } catch (IOException e) {
-            System.err.println("Failed to delete test log file: " + e.getMessage());
+        
+        // Datei löschen mit Retry-Mechanismus
+        int maxRetries = 3;
+        int retryDelay = 100; // milliseconds
+        
+        for (int i = 0; i < maxRetries; i++) {
+            try {
+                Files.deleteIfExists(logFilePath);
+                break;
+            } catch (IOException e) {
+                if (i == maxRetries - 1) {
+                    System.err.println("Failed to delete test log file after " + maxRetries + " attempts: " + e.getMessage());
+                } else {
+                    try {
+                        Thread.sleep(retryDelay);
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        break;
+                    }
+                }
+            }
         }
     }
 
@@ -64,17 +89,30 @@ public class LoggerTest {
         logger.logWarning("Warning message", TEST_CLASS_NAME);
         logger.logError("Error message", TEST_CLASS_NAME);
 
-        // Warten, bis der Consumer die Nachrichten geschrieben hat
-        TimeUnit.SECONDS.sleep(Config.MAX_CONSUMER_SLEEP_TIME + 1);
-
-        // Log-Datei lesen und prüfen
-        List<String> logLines = Files.readAllLines(logFilePath);
-        assertEquals(4, logLines.size(), "Should have logged 4 messages");
-
-        assertTrue(logLines.get(0).contains("[INFO]"), "First message should be INFO");
-        assertTrue(logLines.get(1).contains("[DEBUG]"), "Second message should be DEBUG");
-        assertTrue(logLines.get(2).contains("[WARNING]"), "Third message should be WARNING");
-        assertTrue(logLines.get(3).contains("[ERROR]"), "Fourth message should be ERROR");
+        // Warten bis alle Nachrichten geschrieben wurden
+        int maxWaitTime = 10; // Sekunden
+        int currentWait = 0;
+        boolean allMessagesLogged = false;
+        
+        while (currentWait < maxWaitTime && !allMessagesLogged) {
+            TimeUnit.SECONDS.sleep(1);
+            currentWait++;
+            
+            List<String> logLines = Files.readAllLines(logFilePath);
+            if (logLines.size() == 4) {
+                allMessagesLogged = true;
+                
+                // Prüfen der Log-Nachrichten
+                assertTrue(logLines.get(0).contains("[INFO]"), "First message should be INFO");
+                assertTrue(logLines.get(1).contains("[DEBUG]"), "Second message should be DEBUG");
+                assertTrue(logLines.get(2).contains("[WARNING]"), "Third message should be WARNING");
+                assertTrue(logLines.get(3).contains("[ERROR]"), "Fourth message should be ERROR");
+            }
+        }
+        
+        if (!allMessagesLogged) {
+            fail("Not all messages were logged within " + maxWaitTime + " seconds");
+        }
     }
 
     @Order(3)
