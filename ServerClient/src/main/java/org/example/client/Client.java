@@ -2,6 +2,7 @@ package org.example.client;
 
 import org.example.dataLoader.DAO;
 import org.example.helper.Config;
+import org.example.loggerModule.LoggerClass;
 import org.example.server.ServerRemote;
 import org.example.wdi.WDI;
 
@@ -21,22 +22,25 @@ import java.util.Random;
  */
 public class Client implements Runnable {
 
-    private static final int QUERY_ITERATIONS = 10;
-    private static final int QUERIES_PER_ITERATION = 9;
-    private ServerRemote server;
+    private static final int QUERY_ITERATIONS = 4;
+    private static final int QUERIES_PER_ITERATION = 1;
+    private final ServerRemote server;
     private final DAO dao;
     private final Random random;
     private boolean shutdownServer;
+    private final LoggerClass logger;
+
 
     public Client(ServerRemote server, DAO daoToset, boolean shutdownServer) {
         dao = daoToset;
         random = new Random();
         this.shutdownServer = shutdownServer;
         this.server = server;
+        logger = ClientMain.getLogger(this.getClass().getName());
+        logger.logInfo("Client initialized: " + this.toString());
     }
 
     public Client(ServerRemote server, DAO daoToset) {
-
         this(server, daoToset, false);
     }
 
@@ -93,17 +97,17 @@ public class Client implements Runnable {
                      BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
                     out.println(command);
                     String response = in.readLine();
-                    System.err.println("Server response: " + response);
+                    System.out.println("Server response: " + response);
                 } catch (IOException e) {
-                    System.err.println("Error while executing command: " + command);
-                    System.err.println("Error message: " + e.getMessage());
+                    logger.logWarning("Error while executing command: " + command);
+                    logger.logWarning("Error message: " + e.getMessage());
                 }
                 return;
             }
         } catch (RemoteException e) {
             throw new RuntimeException(e);
         }
-        System.err.println("Server is not running." + command + " cannot be executed");
+        logger.logWarning("Server is not running." + command + " cannot be executed");
     }
 
     /**

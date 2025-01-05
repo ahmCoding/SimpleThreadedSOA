@@ -1,0 +1,14 @@
+14:55:04 [INFO] org.example.server.ServerMain : logger initialized
+14:55:04 [INFO] org.example.server.ServerMain : ServerMain is started
+14:55:04 [INFO] org.example.server.ThreadedServer : Initialization started.
+14:55:04 [INFO] org.example.server.ThreadedServer : Initialization completed.
+14:55:04 [INFO] org.example.server.task.ServerHandleRequestTask : Server is running and can receives client requests.
+14:55:04 [INFO] org.example.server.task.ServerHandleRequestTask : server-service for handling client requests started.
+14:55:04 [INFO] org.example.server.task.ServerHandleRequestTask : In request handling loop.
+14:56:28 [INFO] org.example.server.task.ServerExecuteCommandTask : Server Socket closed.
+14:56:28 [WARNING] org.example.server.task.ServerExecuteCommandTask : Error while accepting a client connection.
+14:56:28 [WARNING] org.example.server.task.ServerExecuteCommandTask : Socket closed
+14:56:28 [INFO] org.example.server.task.ServerExecuteCommandTask : Server components stopped.
+14:56:28 [INFO] org.example.server.task.ServerExecuteCommandTask : Server prepared for shutdown.
+14:56:28 [INFO] org.example.server.task.ServerExecuteCommandTask : Server can't response to any client
+14:56:28 [INFO] org.example.server.task.ServerExecuteCommandTask : ServerHandleRequestTask shut down.

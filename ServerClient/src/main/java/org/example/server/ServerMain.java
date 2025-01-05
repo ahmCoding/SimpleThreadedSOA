@@ -1,6 +1,7 @@
 package org.example.server;
 
 import org.example.helper.Config;
+import org.example.loggerModule.LoggerClass;
 
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -12,9 +13,22 @@ import java.rmi.server.UnicastRemoteObject;
  * Klasse zur Implementierung des Multithreaded Servers
  */
 public class ServerMain {
+    private static LoggerClass logger;
 
+    /**
+     * Gibt eine Instanz der Logger-Klasse zurueck.
+     *
+     * @param className Der Name der Klasse, die logt.
+     **/
+    public static LoggerClass getLogger(String className) {
+        return LoggerClass.getLogger(className);
+    }
 
     public static void main(String[] arg) {
+        // init logger
+        logger = LoggerClass.getLogger(ServerMain.class.getName());
+        logger.logInfo("logger initialized");
+        logger.logInfo("ServerMain is started");
         ServerRemote server = ThreadedServer.getServer();
 
         try {
@@ -27,26 +41,28 @@ public class ServerMain {
                     registry.unbind("ThreadedServer");
                     UnicastRemoteObject.unexportObject(registry, true);
                 } catch (RemoteException | NotBoundException e) {
-                    System.err.println("Fehler beim Beenden: " + e.getMessage());
+                    logger.logWarning("Fehler beim Beenden: " + e.getMessage());
                 }
             }));
             // Start the server
             server.run();
+
             while (server.isRunning()) {
                 try {
                     Thread.sleep(Config.SERVER_SLEEP_TIME);
                 } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
+                    logger.logInfo("ServerMain is interrupted: " + e.getMessage());
                 }
             }
             // stop the server and RMI-Services
             registry.unbind("ThreadedServer");
             UnicastRemoteObject.unexportObject(registry, true);
-            System.out.println("ServerMain is stopped");
+            logger.logInfo("ServerMain is stopped");
             System.exit(0);
         } catch (RemoteException | NotBoundException e) {
             throw new RuntimeException(e);
         }
-        System.out.println("END");
+        logger.logInfo("logger shutdown");
+        logger.shutdown();
     }
 }

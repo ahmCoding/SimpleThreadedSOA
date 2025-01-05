@@ -11,4 +11,4 @@ plugins {
 }
 
 rootProject.name = 'SimpleThreadedSOA'
-include('ServerClient', 'Utility', 'Cache', 'Logger')
+include('ServerClient', 'Utility', 'CacheModule', 'LoggerModule')

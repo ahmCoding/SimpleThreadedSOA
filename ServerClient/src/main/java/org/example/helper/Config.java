@@ -6,4 +6,5 @@ public class Config {
     public static final int RMI_PORT = 1100;
 
     public static final int SERVER_SLEEP_TIME = 1_000;
+    public static long getMaxTimeForExecutorTermination = 10;
 }

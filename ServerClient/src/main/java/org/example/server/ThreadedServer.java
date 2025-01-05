@@ -1,7 +1,8 @@
 package org.example.server;
 
-import org.example.cache.CacheSystem;
+import org.example.cacheModule.CacheSystem;
 import org.example.helper.Config;
+import org.example.loggerModule.LoggerClass;
 import org.example.server.task.ServerExecuteCommandTask;
 import org.example.server.task.ServerHandleRequestTask;
 
@@ -12,7 +13,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Klasse zur Implementierung des Multithreaded Servers
@@ -26,6 +26,7 @@ public class ThreadedServer implements ServerRemote {
     private ServerSocket serverSocket;
     private CacheSystem serverCache;
     private Thread handleRequestTask;
+    private LoggerClass logger;
 
     public ThreadPoolExecutor getExecutor() {
         return executor;
@@ -50,6 +51,8 @@ public class ThreadedServer implements ServerRemote {
 
 
     private void init() {
+        logger = ServerMain.getLogger(this.getClass().getName());
+        logger.logInfo("Initialization started.");
         stopServer = true;
         executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
         serverCache = new CacheSystem();
@@ -60,7 +63,7 @@ public class ThreadedServer implements ServerRemote {
             System.err.println(e.getMessage());
             return;
         }
-        System.err.println("Initialization completed.");
+        logger.logInfo("Initialization completed.");
     }
 
     /**
@@ -80,33 +83,27 @@ public class ThreadedServer implements ServerRemote {
             handleRequestTask.setName("ServerHandleRequestTask-Thread");
             handleRequestTask.start();
             stopServer = false;
-            System.out.println("Server is running and can receives client requests.");
+            logger.logInfo("Server is running and can receives client requests.");
             return;
         }
-        System.out.println("Server is already running.");
+        logger.logInfo("Server is already running.");
     }
 
     public void handleRequests() {
+        logger.logInfo("In request handling loop.");
         do {
             try {
                 Socket clientSocket = serverSocket.accept();
                 Thread delegatedTask = new Thread(new ServerExecuteCommandTask(clientSocket, server));
                 executor.execute(delegatedTask);
             } catch (IOException e) {
-                System.err.println("Error while accepting a client connection.");
-                System.err.println(e.getMessage());
+                logger.logWarning("Error while accepting a client connection.");
+                logger.logWarning(e.getMessage());
                 e.getStackTrace();
             }
         } while (isRunning());
-        System.out.println("Server prepared for shutdown.");
-        try {
-            // warte, bis alle Tasks beendet sind
-            executor.awaitTermination(15, TimeUnit.MINUTES);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-        System.out.println("Server shutdown completed.");
-
+        logger.logInfo("Server prepared for shutdown.");
+        logger.logInfo("Server can't response to any client");
     }
 
     /**
@@ -116,20 +113,23 @@ public class ThreadedServer implements ServerRemote {
      */
     public String shutdown() {
         if (isRunning()) {
-            // keine weiteren Anfragen annehmen
-            executor.shutdown();
-            handleRequestTask.interrupt();
-            serverCache.shutdown();
+            stopServer = true;
             try {
                 // ServerSocket schließen damit serverSocket.accept() beendet wird
                 serverSocket.close();
+                logger.logInfo("Server Socket closed.");
 
             } catch (Exception e) {
                 System.err.println("Error while closing the server socket.");
                 System.err.println(e.getMessage());
                 return "Error while closing the server socket.";
             }
-            stopServer = true;
+            // keine weiteren Anfragen annehmen
+            executor.shutdown();
+            serverCache.shutdown();
+            logger.logInfo("Server components stopped.");
+            // ServerHandleRequestTask beenden
+            //handleRequestTask.interrupt();
             return Thread.currentThread().getName() + " : Server Socket closed!";
         }
         return Thread.currentThread().getName() + " : Server already closed!";

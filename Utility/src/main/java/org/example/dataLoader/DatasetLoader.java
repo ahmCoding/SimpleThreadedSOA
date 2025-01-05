@@ -5,7 +5,6 @@ import org.example.wdi.WDI;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -27,7 +26,7 @@ public class DatasetLoader {
         List<WDI> dataSet = new ArrayList<>();
         Path file = Paths.get(path);
 
-        try (InputStream inStream = Files.newInputStream(file);
+        try (InputStream inStream = getClass().getClassLoader().getResourceAsStream(path);
              BufferedReader reader =
                      new BufferedReader(new InputStreamReader(inStream))) {
             String line = null;

@@ -1,5 +1,7 @@
 package org.example.server.task;
 
+import org.example.loggerModule.LoggerClass;
+import org.example.server.ServerMain;
 import org.example.server.ThreadedServer;
 
 /**
@@ -8,17 +10,25 @@ import org.example.server.ThreadedServer;
  */
 public class ServerHandleRequestTask implements Runnable {
     private final ThreadedServer server;
+    private LoggerClass logger;
 
     public ServerHandleRequestTask(ThreadedServer server) {
         this.server = server;
+        logger = ServerMain.getLogger(this.getClass().getName());
 
     }
 
     @Override
     public void run() {
-        while (!Thread.currentThread().isInterrupted()) {
+        try {
+            logger.logInfo("server-service for handling client requests started.");
             server.handleRequests();
+        } catch (Exception e) {
+            if (server.isRunning()) {
+                logger.logError("Error while handling client requests.");
+                logger.logError(e.getMessage());
+            }
         }
-        System.err.println("Server is stopped and can't response to any client");
+        logger.logInfo("ServerHandleRequestTask shut down.");
     }
 }

@@ -1,6 +1,8 @@
 package org.example.server.task;
 
 import org.example.command.*;
+import org.example.loggerModule.LoggerClass;
+import org.example.server.ServerMain;
 import org.example.server.ThreadedServer;
 
 import java.io.BufferedReader;
@@ -15,10 +17,12 @@ import java.net.Socket;
 public class ServerExecuteCommandTask implements Runnable {
     private final Socket clientSocket;
     private final ThreadedServer server;
+    private LoggerClass logger;
 
     public ServerExecuteCommandTask(Socket clientSocket, ThreadedServer server) {
         this.clientSocket = clientSocket;
         this.server = server;
+        logger = ServerMain.getLogger(this.getClass().getName());
 
     }
 
@@ -61,18 +65,18 @@ public class ServerExecuteCommandTask implements Runnable {
             String result = server.getServerCache().get(command);
             if (result != null) {
                 out.println(server.getServerCache().get(command));
-                System.err.println("**** Cache hit for command: " + line + " ****");
+                logger.logInfo("**** Cache hit for command: " + line + " ****");
                 return;
             }
 
             result = command.execute();
             // wenn der Command zum Zwischenspeichern geeignet ist (Serverstatus oder Shutdown sind nicht!)
             if (command.isCacheable()) server.getServerCache().put(command, result);
-            System.err.println(result);
+            System.out.println(result); // Ausgabe in der Konsole nur für Testzwecke
             out.println(result);
         } catch (IOException e) {
-            System.err.println("Error while processing the client request.");
-            System.err.println(e.getMessage());
+            logger.logWarning("Error while processing the client request.");
+            logger.logWarning(e.getMessage());
         }
         // ClientSocket schließen, finally-block wegen 'return' in 'Cache-hit' Fall notwendig
         finally {
@@ -81,8 +85,8 @@ public class ServerExecuteCommandTask implements Runnable {
                 if (out != null) out.close();
                 if (in != null) in.close();
             } catch (IOException e) {
-                System.err.println("Error while closing the client socket/streams.");
-                System.err.println(e.getMessage());
+                logger.logWarning("Error while closing the client socket/streams.");
+                logger.logWarning(e.getMessage());
             }
         }
     }
